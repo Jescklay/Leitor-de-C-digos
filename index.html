@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isabel Variedades - Frente de Caixa (PDV)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+</head>
+
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-brand-500 selection:text-white">
+
+    <!-- CABEÇALHO DO PDV -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-3">
+            <h1 class="font-bold text-lg text-white">Isabel Variedades <span class="text-brand-500">PDV</span></h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- LINK CORRIGIDO PARA O GITHUB PAGES -->
+            <a href="./leitor.html" target="_self" class="bg-brand-600/20 text-brand-400 border border-brand-500/30 px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-brand-600/30 transition flex items-center gap-2 shadow-lg shadow-brand-500/10">
+                <i class="fa-solid fa-mobile-screen"></i> Abrir Leitor Celular
+            </a>
+        </div>
+    </header>
+
+    <!-- CORPO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-4 overflow-hidden">
+        
+        <!-- COLUNA ESQUERDA: CARRINHO -->
+        <div class="md:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col shadow-xl">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-800">
+                <h2 class="font-bold text-sm text-slate-300 flex items-center gap-2">
+                    <i class="fa-solid fa-basket-shopping text-brand-500"></i> Carrinho de Vendas
+                </h2>
+                <span id="cart-item-count" class="text-xs bg-slate-800 px-2.5 py-1 rounded-lg text-slate-400 font-mono">0 item(s)</span>
+            </div>
+
+            <!-- CAMPO DE BUSCA MANUAL NO PC -->
+            <div class="mb-3">
+                <input type="text" id="pdv-search-input" placeholder="Digite o código de barras ou nome e aperte Enter..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+
+            <!-- TABELA DE ITENS -->
+            <div class="flex-1 overflow-y-auto max-h-[50vh]">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="text-xs text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
+                            <th class="py-2 px-2">#</th>
+                            <th class="py-2 px-2">Cód</th>
+                            <th class="py-2 px-2">Produto</th>
+                            <th class="py-2 px-2 text-right">Qtd</th>
+                            <th class="py-2 px-2 text-right">Unitário</th>
+                            <th class="py-2 px-2 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items-tbody" class="divide-y divide-slate-800/40"></tbody>
+                </table>
+                <div id="cart-empty-state" class="text-center py-16 text-slate-500 text-xs">
+                    <i class="fa-solid fa-barcode text-3xl mb-2 text-slate-600 block"></i>
+                    Aguardando itens... Bipe pelo celular ou digite acima.
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA: RESUMO E TOTAIS -->
+        <div class="md:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-xl">
+            <div>
+                <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">Resumo da Venda</h3>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span>Subtotal</span>
+                        <span id="summary-subtotal" class="font-mono text-white">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-xs text-slate-400">
+                        <span>Desconto</span>
+                        <span id="summary-discount" class="font-mono text-rose-400">- R$ 0,00</span>
+                    </div>
+                    <div class="border-t border-slate-800 pt-3 flex justify-between items-center">
+                        <span class="text-xs font-bold text-brand-500 uppercase">Total a Pagar</span>
+                        <div id="summary-total" class="text-2xl font-black text-white font-mono">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="alert('Venda finalizada com sucesso!')" id="btn-finish-sale" disabled class="w-full bg-brand-600 hover:bg-brand-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-brand-600/30">
+                Finalizar Venda (F2)
+            </button>
+        </div>
+    </main>
+
+    <!-- Script Principal do PDV -->
+    <script src="script.js"></script>
+</body>
+</html>
