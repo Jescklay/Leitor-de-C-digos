@@ -1,0 +1,301 @@
+/* Reset e Configurações de Layout Tela Cheia */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background-color: #020617;
+    color: #f8fafc;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Cabeçalho */
+.scanner-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0));
+    z-index: 30;
+}
+
+.scanner-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.scanner-brand i {
+    color: #22c55e;
+    font-size: 18px;
+}
+
+.status-badge {
+    background-color: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    backdrop-filter: blur(8px);
+}
+
+/* Área Principal da Câmera (Tela Cheia) */
+.scanner-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#video-preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Camada de Sobreposição e Guia */
+.scanner-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+    background: radial-gradient(circle, rgba(0,0,0,0) 30%, rgba(2,6,23,0.7) 90%);
+}
+
+.target-frame {
+    position: relative;
+    width: 290px;
+    height: 150px;
+    border: 2px solid rgba(34, 197, 94, 0.4);
+    border-radius: 16px;
+    background-color: rgba(34, 197, 94, 0.02);
+    box-shadow: 0 0 40px rgba(34, 197, 94, 0.1);
+    overflow: hidden;
+}
+
+/* Cantos da Mira de Foco */
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: #22c55e;
+    border-style: solid;
+    border-width: 0;
+}
+.corner.top-left { top: 0; left: 0; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 12px; }
+.corner.top-right { top: 0; right: 0; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 12px; }
+.corner.bottom-left { bottom: 0; left: 0; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 12px; }
+.corner.bottom-right { bottom: 0; right: 0; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 12px; }
+
+/* Jogo de Luzes / Laser Animado */
+.laser-beam {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #22c55e, #4ade80, #22c55e, transparent);
+    box-shadow: 0 0 15px #22c55e, 0 0 30px #22c55e;
+    animation: laserScan 2s infinite ease-in-out;
+}
+
+@keyframes laserScan {
+    0%, 100% { top: 0%; opacity: 0.8; }
+    50% { top: 95%; opacity: 1; }
+}
+
+.guide-label {
+    margin-top: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #e2e8f0;
+    background-color: rgba(15, 23, 42, 0.85);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+/* Card de Resultado / Congelamento da Leitura */
+.result-card {
+    position: absolute;
+    z-index: 25;
+    background-color: rgba(15, 23, 42, 0.96);
+    border: 2px solid #22c55e;
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 88%;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
+    animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-icon {
+    font-size: 42px;
+    color: #22c55e;
+    margin-bottom: 8px;
+}
+
+.result-subtitle {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.result-code {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 8px 0;
+    letter-spacing: 1px;
+}
+
+.result-product-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4ade80;
+    margin-bottom: 20px;
+    padding: 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-rescan {
+    background-color: #16a34a;
+    color: #ffffff;
+    border: none;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+    transition: background-color 0.2s;
+}
+
+.btn-rescan:hover {
+    background-color: #22c55e;
+}
+
+/* Card de Erro */
+.error-card {
+    position: absolute;
+    z-index: 25;
+    background-color: #0f172a;
+    border: 1px solid rgba(244, 63, 94, 0.4);
+    border-radius: 24px;
+    padding: 24px;
+    width: 88%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+}
+
+.error-card i {
+    font-size: 38px;
+    color: #f43f5e;
+    margin-bottom: 12px;
+}
+
+.error-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+}
+
+.error-card p {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.btn-retry {
+    background-color: #f43f5e;
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Rodapé */
+.scanner-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 14px 20px;
+    text-align: center;
+    background: linear-gradient(to top, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0));
+    z-index: 30;
+}
+
+.footer-info {
+    font-size: 11px;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-info i {
+    color: #22c55e;
+}
+
+.hidden {
+    display: none !important;
+}
