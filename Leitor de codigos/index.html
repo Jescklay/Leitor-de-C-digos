@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isabel Variedades - Leitor Mobile</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    
+    <!-- Html5-Qrcode Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 p-4 max-w-md mx-auto justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- HEADER DO LEITOR -->
+    <header class="text-center py-3">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-600/20 text-brand-400 border border-brand-500/30 mb-2 shadow-lg shadow-brand-500/10">
+            <i class="fa-solid fa-camera text-xl"></i>
+        </div>
+        <h1 class="font-bold text-lg text-white">Leitor Mobile</h1>
+        <p class="text-xs text-slate-400">Apontar a câmera para o código de barras do produto</p>
+    </header>
+
+    <!-- ÁREA DE CAPTURA DA CÂMERA -->
+    <main class="flex-1 flex flex-col justify-center items-center my-2">
+        <div class="w-full rounded-2xl overflow-hidden border-2 border-brand-500/50 bg-black shadow-2xl relative min-h-[300px] flex items-center justify-center">
+            <div id="reader" class="w-full"></div>
+            <div id="scanner-status" class="absolute bottom-3 bg-slate-900/80 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-semibold text-brand-400 border border-slate-700">
+                Aguardando leitura...
+            </div>
+        </div>
+
+        <!-- ÚLTIMO ITEM BIPEADO -->
+        <div id="last-scanned-card" class="w-full mt-4 bg-slate-900 border border-slate-800 rounded-xl p-4 hidden shadow-xl animate-in fade-in zoom-in duration-200">
+            <span class="text-[10px] uppercase font-bold text-brand-400 tracking-wider">Último Produto Adicionado</span>
+            <div id="last-scanned-name" class="font-bold text-base text-white truncate mt-0.5">-</div>
+            <div class="flex justify-between items-center mt-2 text-xs">
+                <span id="last-scanned-barcode" class="font-mono-num text-slate-400">-</span>
+                <span id="last-scanned-price" class="font-mono-num font-bold text-brand-400 text-sm">R$ 0,00</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- RODAPÉ / CONTROLE -->
+    <footer class="py-3 space-y-2">
+        <button onclick="toggleScanner()" id="btn-toggle-scanner" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-brand-600/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-power-off"></i> Parar / Iniciar Câmera
+        </button>
+        <a href="index.html" class="block text-center text-xs text-slate-500 hover:text-slate-300 py-1 transition">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Sistema Principal (PDV)
+        </a>
+    </footer>
+
+    <!-- SCRIPT DO LEITOR MOBILE -->
+    <script>
+        let html5QrCode = null;
+        let isScanningActive = false;
+        let audioCtx = null;
+
+        const DEFAULT_PRODUCTS = [
+            { id: "1", barcode: "7891000100101", name: "Arroz Tipo 1 5kg", category: "Mercearia", priceRetail: 28.90, priceWholesale: 26.50, stock: 45 },
+            { id: "2", barcode: "7891000200202", name: "Feijão Preto 1kg", category: "Mercearia", priceRetail: 8.50, priceWholesale: 7.90, stock: 60 },
+            { id: "3", barcode: "7891000300303", name: "Óleo de Soja 900ml", category: "Mercearia", priceRetail: 6.80, priceWholesale: 6.20, stock: 80 },
+            { id: "4", barcode: "7891000400404", name: "Leite Integral 1L", category: "Laticínios", priceRetail: 4.99, priceWholesale: 4.50, stock: 120 },
+            { id: "5", barcode: "7891000500505", name: "Café Torrado e Moído 500g", category: "Mercearia", priceRetail: 16.90, priceWholesale: 15.20, stock: 35 }
+        ];
+
+        window.onload = function() {
+            initAudioContext();
+            startScanner();
+            document.addEventListener('click', initAudioContext, { once: true });
+        };
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playBeep() {
+            try {
+                initAudioContext();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1900, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {
+                console.log("Erro áudio:", e);
+            }
+        }
+
+        function startScanner() {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            const config = { fps: 15, qrbox: { width: 260, height: 160 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess
+            ).then(() => {
+                isScanningActive = true;
+                document.getElementById('scanner-status').textContent = 'Câmera Ativa - Lendo...';
+            }).catch(err => {
+                console.error("Erro câmera:", err);
+                document.getElementById('scanner-status').textContent = 'Erro ao acessar a câmera';
+            });
+        }
+
+        function toggleScanner() {
+            if (isScanningActive) {
+                html5QrCode.stop().then(() => {
+                    isScanningActive = false;
+                    document.getElementById('scanner-status').textContent = 'Câmera Pausada';
+                });
+            } else {
+                startScanner();
+            }
+        }
+
+        let processingScan = false;
+        function onScanSuccess(decodedText) {
+            if (processingScan || !decodedText) return;
+            processingScan = true;
+
+            playBeep();
+
+            // Recupera produtos salvos no localStorage (mesmo domínio/rede)
+            let products = JSON.parse(localStorage.getItem('isabel_products') || JSON.stringify(DEFAULT_PRODUCTS));
+            let product = products.find(p => p.barcode === decodedText || p.name.toLowerCase() === decodedText.toLowerCase());
+
+            if (product) {
+                // Recupera o carrinho atual
+                let currentCart = JSON.parse(localStorage.getItem('isabel_current_cart') || '[]');
+                const existingIndex = currentCart.findIndex(item => item.product.id === product.id);
+
+                if (existingIndex > -1) {
+                    currentCart[existingIndex].qty += 1;
+                    currentCart[existingIndex].total = currentCart[existingIndex].qty * currentCart[existingIndex].price;
+                } else {
+                    currentCart.push({
+                        product: product,
+                        qty: 1,
+                        price: product.priceRetail,
+                        total: product.priceRetail
+                    });
+                }
+
+                // Salva no localStorage disparando o evento 'storage' para sincronizar com o PC instantaneamente
+                localStorage.setItem('isabel_current_cart', JSON.stringify(currentCart));
+
+                // Exibe feedback visual na tela do celular
+                document.getElementById('last-scanned-card').classList.remove('hidden');
+                document.getElementById('last-scanned-name').textContent = product.name;
+                document.getElementById('last-scanned-barcode').textContent = `Cód: ${product.barcode}`;
+                document.getElementById('last-scanned-price').textContent = `R$ ${product.priceRetail.toFixed(2)}`;
+                document.getElementById('scanner-status').textContent = `Bipado: ${product.name}`;
+            } else {
+                document.getElementById('scanner-status').textContent = `Não cadastrado: ${decodedText}`;
+            }
+
+            setTimeout(() => {
+                processingScan = false;
+                document.getElementById('scanner-status').textContent = 'Câmera Ativa - Lendo...';
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
